@@ -30,6 +30,8 @@ SSH monitoring tool for multiple remote node management. Multi-host, multi-pane 
 
 Help support our work and delegate your ADA to Upstream: [UPSTR](https://upstream.org.uk), every little helps!
 
+Security reports: see [SECURITY.md](SECURITY.md).
+
 
 ---
 
@@ -41,28 +43,31 @@ Pull this repo, install dependencies and grant permissions:
 mkdir Monitor && cd Monitor
 git clone https://github.com/devhalls/spo-monitor-scripts.git .
 cp hosts.example.yaml hosts.yaml
-chmod +x ./scripts/* 
+chmod 600 hosts.yaml
+chmod +x ./scripts/*
 ./scripts/install.sh
 ```
 
-Now edit the host.yaml file and configure your nodes:
+Now edit the `hosts.yaml` file and configure your nodes:
 
 ```
-nane hosts.yaml
+nano hosts.yaml
 ```
 
-Create an ssh key on your monitor without a password, replacing the name as you see fit:
+Create a **dedicated** SSH key for monitoring (least privilege — not your producer admin key). A passphrase-protected key is safer if the monitor host is shared; BatchMode still works once the agent holds the key:
 
 ```
 ssh-keygen -t ed25519 -f ~/.ssh/cardano_monitor -C "cardano@monitor"
 ```
 
-Copy your new public key to each device you will monitor:
+Copy your new public key to each device you will monitor (prefer a restricted OS user on producers):
 
 ```
 ssh-copy-id -i ~/.ssh/cardano_monitor.pub user@xxx.xxx.x.xx
-ssh -i ~/.ssh/cardano_monitor user@xxx.xxx.x.xx
+ssh -i ~/.ssh/cardano_monitor -o IdentitiesOnly=yes user@xxx.xxx.x.xx
 ```
+
+On first connect, host keys are recorded in `~/.ssh/known_hosts` (`StrictHostKeyChecking=accept-new`). Do not disable host-key checking.
 
 ---
 
@@ -72,7 +77,13 @@ Once you have edited the hosts.yaml file, you can run the monitor:
 When running, you can navigate to each node using number keys, and press `x` to exit the session.
 
 ```
-./scripts/monitor.sh
+./scripts/manager.sh
+```
+
+Validate SSH connectivity first:
+
+```
+./scripts/manager.sh --check
 ```
 
 ---
@@ -86,19 +97,14 @@ When running, you can navigate to each node using number keys, and press `x` to 
 
 ### Contributing
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any
-contributions you make are greatly appreciated.
+See [CONTRIBUTING.md](CONTRIBUTING.md). Short version:
 
-If you have a suggestion that would make this plugin better, please fork the repo and create a pull request. You can
-also simply open an issue with the tag "enhancement". Don't forget to give the project a star! Thanks again!
+1. Branch from `master` (`feature/<slug>` or `fix/<slug>`)
+2. `./scripts/install-hooks.sh`
+3. Tag-line commits only, e.g. `[SEC] Pin and verify yq downloads`
+4. Open a focused PR
 
-1. Fork the Project
-2. Create your Feature Branch (git checkout -b feature/AmazingFeature)
-3. Commit your Changes (git commit -m 'Add some AmazingFeature')
-4. Push to the Branch (git push origin feature/AmazingFeature)
-5. Open a Pull Request
-
-[#BuildingTogether](https://x.com/search?q=buildingtogether)
+Security reports: see [SECURITY.md](SECURITY.md).
 
 ### License
 

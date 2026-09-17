@@ -9,14 +9,21 @@ SCRIPT="$4"
 
 export TERM=xterm-256color
 
+SSH_OPTS=(
+  -tt
+  -i "$KEY"
+  -o BatchMode=yes
+  -o IdentitiesOnly=yes
+  -o StrictHostKeyChecking=accept-new
+  -o ConnectTimeout=5
+  -o ServerAliveInterval=10
+  -o ServerAliveCountMax=3
+)
+
 while true; do
   echo "[pane/$HOST] Connecting as $USER using key $KEY ..."
 
-  ssh -tt -i "$KEY" \
-      -o BatchMode=yes \
-      -o ConnectTimeout=5 \
-      -o ServerAliveInterval=10 \
-      -o ServerAliveCountMax=3 \
+  ssh "${SSH_OPTS[@]}" \
       "$USER@$HOST" "bash -c '$SCRIPT'" || {
 
         echo

@@ -58,7 +58,7 @@ check_hosts() {
       echo "  [X] Host not reachable by ping"
     fi
 
-    if ssh -i "$key" -o BatchMode=yes -o ConnectTimeout=5 "$user@$host" "echo ok" 2>/dev/null | grep -q "ok"; then
+    if ssh -i "$key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5 "$user@$host" "echo ok" 2>/dev/null | grep -q "ok"; then
       echo "  [✓] SSH key-based login works (no password prompt)"
     else
       echo "  [X] SSH key-based login FAILED"
@@ -72,10 +72,13 @@ check_hosts() {
 [SSH CHECKLIST SUMMARY]
 
 Ensure:
-  - ssh-keygen -t ed25519
-  - ssh-copy-id -i ~/.ssh/id_ed25519.pub user@host
+  - Dedicated monitor key (least privilege; not your producer admin key)
+  - ssh-keygen -t ed25519 -f ~/.ssh/cardano_monitor
+  - ssh-copy-id -i ~/.ssh/cardano_monitor.pub user@host
+  - Host keys recorded in ~/.ssh/known_hosts (StrictHostKeyChecking=accept-new on first connect)
   - ~/.ssh perms: 700
   - authorized_keys perms: 600
+  - hosts.yaml perms: 600 (inventory-sensitive; never commit)
 
 EOF
 }

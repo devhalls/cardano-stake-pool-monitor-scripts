@@ -50,7 +50,7 @@ EOF
     key="$(yq -r ".hosts[$i].key"  "$CONFIG_FILE")"
     title="$(yq -r ".hosts[$i].title"  "$CONFIG_FILE")"
     ping_status=$(ping -c1 -W1 "$host" &>/dev/null && echo "${GR}•${NC}" || echo "${RD}•${NC}")
-    ssh_status=$(ssh -i "$key" -o BatchMode=yes -o ConnectTimeout=3 "$user@$host" "echo ok" &>/dev/null && echo "${GR}•${NC}" || echo "${RD}•${NC}")
+    ssh_status=$(ssh -i "$key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=3 "$user@$host" "echo ok" &>/dev/null && echo "${GR}•${NC}" || echo "${RD}•${NC}")
     printf  "$TH_FMT" "-----" "------------------------" "------------------------" "------" "------"
     printf "$TR_FMT" "[$((i+1))]" "$title" "$user@$host" "$ssh_status" "$ping_status"
   done
