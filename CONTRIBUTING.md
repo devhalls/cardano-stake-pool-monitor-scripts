@@ -2,7 +2,7 @@
 
 ## Commits (tag-line only)
 
-Same policy as Pendulum Arc / Corten:
+Commit policy:
 
 ```
 [ADD] Short imperative summary

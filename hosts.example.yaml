@@ -1,12 +1,20 @@
 # Example hosts.yaml
 # Multi-host multi-pane setups.
 # Adjust the key, username and pane scripts to suit your node setup.
+#
+# Fleet fields (optional; used by ./scripts/fleet.sh):
+#   role:    relay | producer  — required for update ordering (relays first)
+#   workdir: remote path containing scripts/node.sh and env
+#            If omitted, derived from the first pane script
+#            (e.g. "bash Cardano/scripts/node.sh view" → Cardano)
 
 hosts:
   - ip: "xxx.xxx.x.xx"
     title: 'Mainnet Producer'
     user: "upstream"
     key: "~/.ssh/cardano_monitor"
+    role: producer
+    workdir: "Cardano"
     second_column: "80%"
     panes:
       - script: "bash Cardano/scripts/node.sh view"
@@ -28,6 +36,8 @@ hosts:
     title: 'Mainnet Relay Alpha'
     user: "upstream"
     key: "~/.ssh/cardano_monitor"
+    role: relay
+    workdir: "Cardano"
     second_column: "80%"
     panes:
       - script: "bash Cardano/scripts/node.sh view"
@@ -49,6 +59,8 @@ hosts:
     title: 'Mainnet Relay Beta'
     user: "upstream"
     key: "~/.ssh/cardano_monitor"
+    role: relay
+    workdir: "Mainnet"
     second_column: "80%"
     panes:
       - script: "bash Mainnet/scripts/node.sh view"
@@ -67,6 +79,8 @@ hosts:
     title: 'Sanchonet Producer'
     user: "upstream"
     key: "~/.ssh/cardano_monitor"
+    role: producer
+    workdir: "Cardano"
     second_column: "80%"
     panes:
       - script: "bash Cardano/scripts/node.sh view"
@@ -84,6 +98,8 @@ hosts:
     title: 'PreProd Producer'
     user: "upstream"
     key: "~/.ssh/cardano_monitor"
+    role: producer
+    workdir: "Cardano"
     second_column: "80%"
     panes:
       - script: "bash Cardano/scripts/node.sh view"
@@ -101,6 +117,8 @@ hosts:
     title: 'Preview Producer'
     user: "upstream"
     key: "~/.ssh/cardano_monitor"
+    role: producer
+    workdir: "Cardano"
     second_column: "80%"
     panes:
       - script: "bash Cardano/scripts/node.sh view"
@@ -119,6 +137,7 @@ hosts:
     title: 'Midnight Preview'
     user: "upstream"
     key: "~/.ssh/cardano_monitor"
+    # No role: skipped by fleet update (status still lists it with a warning)
     second_column: "80%"
     panes:
       - script: "bash Preview/cardano-midnight/LiveView.sh"

@@ -88,6 +88,46 @@ Validate SSH connectivity first:
 
 ---
 
+## Fleet updates
+
+`./scripts/fleet.sh` updates Cardano nodes across the same `hosts.yaml` inventory used by the monitor (via SSH BatchMode). It drives [spo-operational-scripts](https://github.com/devhalls/spo-operational-scripts) on each host: `git pull` → set `NODE_VERSION` → `scripts/node.sh update --yes` → verify.
+
+**Prerequisites**
+
+- Passwordless SSH already working for the monitor (`./scripts/manager.sh --check`)
+- Each target host has a git checkout of spo-operational-scripts (the path in `workdir`) with the release you want already published/pushed
+- Add fleet fields to `hosts.yaml`:
+
+```yaml
+role: relay          # or producer — required for update ordering
+workdir: "Cardano"   # remote dir containing scripts/node.sh and env
+                     # optional: derived from first pane script if omitted
+```
+
+Hosts without `role` are listed in `status` / `dry-run` but skipped by `update` (e.g. Midnight docker stacks).
+
+**Safety**
+
+- Stops and restarts the node on each host — destructive. Prefer testnets first.
+- Relays update **in parallel**, then producers **sequentially**. If any relay fails, producers are aborted.
+- One local confirm before mutations; pass `--yes` to skip that confirm.
+- Keep `./scripts/manager.sh` open in another terminal to watch tips while updating.
+
+**Examples**
+
+```
+./scripts/fleet.sh check
+./scripts/fleet.sh status
+./scripts/fleet.sh dry-run --version 11.1.2
+./scripts/fleet.sh update --version 11.1.2
+./scripts/fleet.sh update --version 11.1.2 --hosts 'Relay'   # title regex filter
+./scripts/fleet.sh update --version 11.1.2 --no-pull --yes
+```
+
+Requires spo-operational-scripts with `node.sh update --yes` support on the remotes.
+
+---
+
 ## Repository info
 
 ### Contributors
