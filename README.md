@@ -96,6 +96,7 @@ Validate SSH connectivity first:
 
 - Passwordless SSH already working for the monitor (`./scripts/manager.sh --check`)
 - Each target host has a git checkout of spo-operational-scripts (the path in `workdir`) with the release you want already published/pushed
+- spo-operational-scripts on the remotes must support `node.sh update --yes`
 - Add fleet fields to `hosts.yaml`:
 
 ```yaml
@@ -105,6 +106,41 @@ workdir: "Cardano"   # remote dir containing scripts/node.sh and env
 ```
 
 Hosts without `role` are listed in `status` / `dry-run` but skipped by `update` (e.g. Midnight docker stacks).
+
+**Passwordless sudo (required for update)**
+
+Fleet SSH is non-interactive (`BatchMode`, no TTY). On each node, `node.sh update` runs `sudo systemctl stop|restart …` for `$NETWORK_SERVICE`. If that user must type a sudo password, the update fails with:
+
+```text
+sudo: a terminal is required to read the password
+sudo: a password is required
+[ERROR] Could not stop node service
+```
+
+Grant **limited** NOPASSWD rights for the node unit only (do not use `NOPASSWD: ALL`). On each target host, as root:
+
+```bash
+# Replace upstream with the hosts.yaml user, and the unit with NETWORK_SERVICE from that host's env
+# (e.g. cardano-node.sanchonet.service, cardano-node.preview.service, cardano-node.mainnet.service)
+sudo visudo -f /etc/sudoers.d/cardano-node
+```
+
+```
+upstream ALL=(root) NOPASSWD: \
+  /bin/systemctl start cardano-node.*.service, \
+  /bin/systemctl stop cardano-node.*.service, \
+  /bin/systemctl restart cardano-node.*.service, \
+  /bin/systemctl status cardano-node.*.service, \
+  /bin/systemctl is-active cardano-node.*.service
+```
+
+Prefer pinning the exact unit name instead of a glob if you want a tighter rule. Verify with no password prompt:
+
+```bash
+sudo -n systemctl status cardano-node.sanchonet.service
+```
+
+Do **not** rely on `ssh -tt` to type the sudo password — that breaks non-interactive / parallel fleet updates.
 
 **Safety**
 
@@ -118,13 +154,11 @@ Hosts without `role` are listed in `status` / `dry-run` but skipped by `update` 
 ```
 ./scripts/fleet.sh check
 ./scripts/fleet.sh status
-./scripts/fleet.sh dry-run --version 11.1.2
-./scripts/fleet.sh update --version 11.1.2
-./scripts/fleet.sh update --version 11.1.2 --hosts 'Relay'   # title regex filter
-./scripts/fleet.sh update --version 11.1.2 --no-pull --yes
+./scripts/fleet.sh dry-run --version 11.1.3
+./scripts/fleet.sh update --version 11.1.3
+./scripts/fleet.sh update --version 11.1.3 --hosts 'Relay'   # title regex filter
+./scripts/fleet.sh update --version 11.1.3 --no-pull --yes
 ```
-
-Requires spo-operational-scripts with `node.sh update --yes` support on the remotes.
 
 ---
 
