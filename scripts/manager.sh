@@ -158,7 +158,7 @@ setup_keybindings() {
   tmux set-option -g status-style "bg=black,fg=white"
   tmux set-option -g status-left-length 120
   tmux set-option -g status-left "[1..9] hosts  [d] dashboard  [r] restart  [c] color  [x] quit  | "
-  tmux set-option -g status-right 'Node Monitor | v0.1 | #(date +"%Y-%m-%d %H:%M")'
+  tmux set-option -g status-right 'Node Monitor | v0.2 | #(date +"%Y-%m-%d %H:%M")'
   tmux set-option -g window-active-style 'fg=default,bg=default'
   tmux set-option -g window-style        'fg=default,bg=default'
   tmux set-option -g pane-border-status top
